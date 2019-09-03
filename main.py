@@ -1,5 +1,6 @@
 import matplotlib
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from lib import import_data
 

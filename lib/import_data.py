@@ -72,7 +72,6 @@ def readXRD(scrap_dirs):
     print(scrap_contents)
 
     for item in scrap_contents:
-        # key = item.lower().replace(".xrdml", "")
         if (
             os.path.isfile(scrap_dirs + item) == True and
             item.startswith("CIF") != True   
@@ -83,9 +82,16 @@ def readXRD(scrap_dirs):
         else:
             print("skipped " + item)
             pass
-    
-    print(scan_data)
-    
+
+    clean_key_data = {}
+
+    for key in scan_data.keys():
+        clean_key_data[key.replace(".xrdml","")] = scan_data[key]
+
+    # print(clean_key_data.keys())
+    # print(clean_key_data["20min"])
+
+
 def path_init(flag, head):
     """
     -Constructs path to folder of characterization method depending on flag
