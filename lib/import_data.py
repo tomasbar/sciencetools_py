@@ -2,8 +2,10 @@ import shutil
 import os.path
 import sys
 import platform
+import csv
 
 import xrdtools
+import pandas as pd
 
 working_dir = "/Users/tomas/Documents/sciencetools_py/"
 scrap_dir = working_dir + "scrap/"
@@ -32,27 +34,27 @@ def init(flag, samples_dir):
     else:
         sys.exit("ERROR: Functionality not yet developed.")
 
-def readXRD(scrap_dirs):
+def readXRD(sample_scrap_dir):
     """
     -Takes location of local copy of data and extracts python-readable data from XRDML files
 
     -Had to create dummy variable correct_items to remove unwanted files first
     -Correct list is reassigned to scrap_contents after 
     """
-    scrap_contents = os.listdir(scrap_dirs)
+    scrap_contents = os.listdir(sample_scrap_dir)
     # correct_items = scrap_contents[:]
 
     for item in scrap_contents:
         if (
-            os.path.isfile(scrap_dirs + item) == True and 
+            os.path.isfile(sample_scrap_dir + item) == True and 
             item.lower().endswith(".xrdml") == False
         ):
             # correct_items.remove(item)
-            shutil.move(scrap_dirs + item, scrap_dirs + "junk/")
+            shutil.move(sample_scrap_dir + item, sample_scrap_dir + "junk/")
         else:
             pass
     
-    scrap_contents = os.listdir(scrap_dirs)
+    scrap_contents = os.listdir(sample_scrap_dir)
     print(scrap_contents)
     
     """
@@ -66,19 +68,19 @@ def readXRD(scrap_dirs):
     #Clean filenames
     for item in scrap_contents:
         newname = item.replace(" Tomas_quick gonio scan_1", "")
-        os.rename(scrap_dirs + item, scrap_dirs + newname)
+        os.rename(sample_scrap_dir + item, sample_scrap_dir + newname)
     
-    scrap_contents = os.listdir(scrap_dirs)
+    scrap_contents = os.listdir(sample_scrap_dir)
     print(scrap_contents)
 
     for item in scrap_contents:
         if (
-            os.path.isfile(scrap_dirs + item) == True and
+            os.path.isfile(sample_scrap_dir + item) == True and
             item.startswith("CIF") != True   
         ):
             print("reading " + item)
-            shutil.move(scrap_dirs + item, scrap_dirs + "raw/")
-            scan_data[item] = xrdtools.read_xrdml(scrap_dirs + "raw/" + item)
+            shutil.move(sample_scrap_dir + item, sample_scrap_dir + "raw/")
+            scan_data[item] = xrdtools.read_xrdml(sample_scrap_dir + "raw/" + item)
         else:
             print("skipped " + item)
             pass
@@ -90,6 +92,32 @@ def readXRD(scrap_dirs):
 
     # print(clean_key_data.keys())
     # print(clean_key_data["20min"])
+    
+    # """
+    # This section:
+    # -Takes dict data and outputs .csv files
+    # """
+    # for sample in clean_key_data:
+    #     with open(
+    #         sample_scrap_dir + "/py_data/" + sample.key() + ".csv",
+    #         mode="w"
+    #     ) as csv_file:
+    #         fieldnames = ["2theta", "counts"]
+    #         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            
+    #         writer.writeheader()
+    #         writer.writerows()
+
+    export_table = pd.DataFrame(data=None, columns=["2theta", "counts"])
+
+    for key in clean_key_data.keys():
+        export_table["2theta"] = clean_key_data[key]["x"]
+        export_table["counts"] = clean_key_data[key]["data"]
+
+        export_table.to_csv(sample_scrap_dir + "py_data/" + key + ".csv",
+            index=False)
+
+    print(export_table)
 
 
 def path_init(flag, head):

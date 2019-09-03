@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from lib import import_data
+import pandas as pd
 
 """
 The bulk of the plotting will be handled from here
