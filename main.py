@@ -17,6 +17,6 @@ flag = "xrd"
 # Use a list to store multiple directories that you want ready to plot
 samples_dir = "190710 ETB-042 EDBE-PbBr on glass FF/"
 
-import_data.init(flag, samples_dir)
-
+data_dict = import_data.init(flag, samples_dir)
+print(data_dict)
 # import_data.wipe_scrap()

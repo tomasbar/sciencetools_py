@@ -30,7 +30,8 @@ def init(flag, samples_dir):
         sys.exit("ERROR: Invalid value in samples_dir.")
 
     if flag == "xrd":
-        readXRD(scrap_dir + samples_dir)
+        data = readXRD(scrap_dir + samples_dir)
+        return data
     else:
         sys.exit("ERROR: Functionality not yet developed.")
 
@@ -93,32 +94,28 @@ def readXRD(sample_scrap_dir):
     # print(clean_key_data.keys())
     # print(clean_key_data["20min"])
     
-    # """
-    # This section:
-    # -Takes dict data and outputs .csv files
-    # """
-    # for sample in clean_key_data:
-    #     with open(
-    #         sample_scrap_dir + "/py_data/" + sample.key() + ".csv",
-    #         mode="w"
-    #     ) as csv_file:
-    #         fieldnames = ["2theta", "counts"]
-    #         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-            
-    #         writer.writeheader()
-    #         writer.writerows()
+    """
+    This section:
+    -Takes dict data and outputs .csv files
+    -Returns a dict of pandas DataFrames
+    """
 
-    export_table = pd.DataFrame(data=None, columns=["2theta", "counts"])
+    meta_export_table = {}
 
     for key in clean_key_data.keys():
+        export_table = pd.DataFrame(data=None, columns=["2theta", "counts"])
+
         export_table["2theta"] = clean_key_data[key]["x"]
         export_table["counts"] = clean_key_data[key]["data"]
 
         export_table.to_csv(sample_scrap_dir + "py_data/" + key + ".csv",
             index=False)
 
-    print(export_table)
+        meta_export_table[key] = export_table
+        del export_table
 
+    return meta_export_table
+    # print(meta_export_table)
 
 def path_init(flag, head):
     """
