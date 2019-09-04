@@ -185,7 +185,6 @@ def path_init(flag, head):
         print("Creating new local data folder.")    
         shutil.copytree(path, scrap_sample_dir)
         populate_scrap(scrap_sample_dir)
-        sys.exit()
         
 def populate_scrap(scrap_sample_dir):
     os.mkdir(os.path.join(scrap_sample_dir, "junk/"))

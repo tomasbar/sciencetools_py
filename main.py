@@ -16,12 +16,29 @@ flag = "xrd"
 
 # Identify the folder(s) where the raw, original data is
 # Use a list to store multiple directories that you want ready to plot
-samples_dir = "190710 ETB-042 EDBE-PbBr on glass FF/"
 
-data_dict = import_data.init(flag, samples_dir)
-# print(data_dict)
+# ETB-046 Variables
+samples_dir_etb046 = "190722 ETB-046 MAPbI on glass FF/"
+data_dict_etb046 = import_data.init(flag, samples_dir_etb046)
+cypher_etb046 = (
+    "30sec",
+    "1min",
+    "2min",
+    "3min",
+    "5min",
+    "20min",
+)
 
-for key in data_dict.keys():
-    plt.plot(data_dict[key]["2theta"], data_dict[key]["counts"])
+# print(data_dict_etb046)
 
+for key in cypher_etb046:
+    plt.plot(data_dict_etb046[key]["2theta"], data_dict_etb046[key]["counts"], label=key)
+
+plt.xlabel("2θ [deg.]")
+plt.ylabel("Counts")
+plt.legend()
+
+plt.title("MAPbI Film Formation XRD")
+
+print('about to plot lul')
 plt.show()
