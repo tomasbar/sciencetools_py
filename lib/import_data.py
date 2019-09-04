@@ -7,9 +7,6 @@ import csv
 import xrdtools
 import pandas as pd
 
-working_dir = "/Users/tomas/Documents/sciencetools_py/"
-scrap_dir = working_dir + "scrap/"
-
 def init(flag, samples_dir):
     """
     This module should create the environment we want to work with when plotting/working with data.
@@ -30,7 +27,7 @@ def init(flag, samples_dir):
         sys.exit("ERROR: Invalid value in samples_dir.")
 
     if flag == "xrd":
-        data = readXRD(scrap_dir + samples_dir)
+        data = readXRD(os.path.join(scrap_dir, samples_dir))
         return data
     else:
         sys.exit("ERROR: Functionality not yet developed.")
@@ -108,7 +105,10 @@ def readXRD(sample_scrap_dir):
         export_table["2theta"] = clean_key_data[key]["x"]
         export_table["counts"] = clean_key_data[key]["data"]
 
-        export_table.to_csv(sample_scrap_dir + "py_data/" + key + ".csv",
+        export_table.to_csv(
+            os.path.join(sample_scrap_dir, "py_data/")
+            + key
+            + ".csv",
             index=False)
 
         meta_export_table[key] = export_table
@@ -141,7 +141,7 @@ def path_init(flag, head):
 
     # Check valid flag was passed, if valid construct path
     if flag in cypher.keys():
-        path = cypher[flag] + head
+        path = os.path.join(cypher[flag], head)
     else:
         sys.exit("ERROR: Invalid flag provided, check 'flag' variable in import_main.py")
     
@@ -157,7 +157,7 @@ def path_init(flag, head):
     -Makes local copy of given 'path' in scrap folder
     """
 
-    scrap_sample_dir = scrap_dir + head
+    scrap_sample_dir = os.path.join(scrap_dir, head)
     
     # Checks for presence of corresponding data in 'scrap' folder
     # Checks if new data should be overwritten whatever is in there already
@@ -182,18 +182,27 @@ def path_init(flag, head):
 
         
     elif os.path.isdir(scrap_sample_dir) == False:
-        print("Creating new local data folder.")
+        print("Creating new local data folder.")    
         shutil.copytree(path, scrap_sample_dir)
         populate_scrap(scrap_sample_dir)
+        sys.exit()
         
 def populate_scrap(scrap_sample_dir):
-    os.mkdir(scrap_sample_dir + "junk/")
-    os.mkdir(scrap_sample_dir + "py_data/")
-    os.mkdir(scrap_sample_dir + "figures/")
-    os.mkdir(scrap_sample_dir + "raw/")
+    os.mkdir(os.path.join(scrap_sample_dir, "junk/"))
+    os.mkdir(os.path.join(scrap_sample_dir, "py_data/"))
+    os.mkdir(os.path.join(scrap_sample_dir, "figures/"))
+    os.mkdir(os.path.join(scrap_sample_dir, "raw/"))
 
 def wipe_scrap():
     scrap_contents = os.listdir("./scrap")
     
     for folder in scrap_contents:
-        shutil.rmtree("./scrap/" + folder)
+        shutil.rmtree(os.path.join("./scrap/", folder))
+
+# GLOBAL PLATFORM DEPENDENT VARIABLES
+if platform.system() == "Darwin":
+    working_dir = "/Users/tomas/Documents/sciencetools_py/"
+else:
+    working_dir = "/home/tomas/Documents/sciencetools_py/"
+
+scrap_dir = os.path.join(working_dir, "scrap/")

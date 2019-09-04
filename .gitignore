@@ -1,2 +1,3 @@
 scrap/**
 lib/__pycache__/
+.vscode
