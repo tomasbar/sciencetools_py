@@ -2,3 +2,5 @@ scrap/**
 lib/__pycache__/
 __pycache__/*
 .vscode
+.ipynb_checkpoints
+*.png
