@@ -10,8 +10,6 @@ import pandas as pd
 import numpy as np
 
 from lib import import_data
-import pandas as pd
-
 
 # In[23]:
 
