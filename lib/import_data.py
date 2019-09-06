@@ -4,6 +4,7 @@ import sys
 import platform
 import csv
 
+# import matlab.engine()
 import xrdtools
 import pandas as pd
 
@@ -27,8 +28,13 @@ def init(flag, samples_dir):
         sys.exit("ERROR: Invalid value in samples_dir.")
 
     if flag == "xrd":
-        data = readXRD(os.path.join(scrap_dir, samples_dir))
+        data = readXRD(os.path.join(scrap_dir, "XRD", samples_dir))
         return data
+    elif flag == "pl":
+        data = readPL(os.path.join(scrap_dir, "PL", samples_dir))
+    elif flag == "uvvis":
+        # data = readUVVIS(os.path.join(scrap_dir, "UVVIS", samples_dir))
+        pass
     else:
         sys.exit("ERROR: Functionality not yet developed.")
 
@@ -117,6 +123,112 @@ def readXRD(sample_scrap_dir):
     return meta_export_table
     # print(meta_export_table)
 
+def readPL(sample_scrap_dir):
+    """
+    -Takes location of local copy of data and extracts python-readable data from XRDML files
+
+    -Had to create dummy variable correct_items to remove unwanted files first
+    -Correct list is reassigned to scrap_contents after 
+    """
+    scrap_contents = os.listdir(sample_scrap_dir)
+    # correct_items = scrap_contents[:]
+
+    for item in scrap_contents:
+        if (
+            os.path.isfile(sample_scrap_dir + item) == True and 
+            item.lower().endswith(".txt") == False
+        ):
+            # correct_items.remove(item)
+            shutil.move(sample_scrap_dir + item, sample_scrap_dir + "junk/")
+        else:
+            pass
+    
+    scrap_contents = os.listdir(sample_scrap_dir)
+    print(scrap_contents)
+    
+    """
+    This section:
+    -Iterate over files we want to extract data from now
+    -Clean filenames to make easier descriptors later 
+    -Raw data is placed into scrap/*sample*/raw
+    -Data is spat out into csv files in scrap/*sample*/py_data
+    """
+    scan_data = {}
+    temp = []
+    #Clean filenames
+    # for item in scrap_contents:
+    #     newname = item.replace(" Tomas_quick gonio scan_1", "")
+    #     os.rename(sample_scrap_dir + item, sample_scrap_dir + newname)
+    
+    scrap_contents = os.listdir(sample_scrap_dir)
+    print(scrap_contents)
+
+    for item in scrap_contents:
+        if (
+            os.path.isfile(sample_scrap_dir + item) == True and
+            item.startswith("CIF") != True   
+        ):
+            print("reading " + item)
+            with open(sample_scrap_dir + item, encoding="ISO-8859-1") as file_obj:
+                contents = file_obj.readlines()
+            
+            # print(contents)
+            
+            for line in contents:
+                if line.startswith("#") == False:
+                    temp.append(line.rstrip()) 
+
+
+            scan_data[item] = temp[:]
+            # print(scan_data)
+            temp = []
+
+            shutil.move(sample_scrap_dir + item, sample_scrap_dir + "raw/")
+        else:
+            print("skipped " + item)
+            pass
+
+    
+    print(scan_data.keys())
+    clean_key_data = {}
+
+    for key in scan_data.keys():
+        clean_key_data[key.replace(".txt","")] = scan_data[key]
+
+    # print(clean_key_data.keys())
+    # print(clean_key_data["20min"])
+    
+    """
+    This section:
+    -Takes dict data and outputs .csv files
+    -Returns a dict of pandas DataFrames
+    """
+
+    meta_export_table = {}
+
+    for key in clean_key_data.keys():
+        export_table = pd.DataFrame(data=None, columns=["wavelength", "counts"])
+
+        export_table = pd.read_table(clean_key_data[key])
+        print(export_table)
+
+
+
+        # export_table["wavelength"] = clean_key_data[key]["x"]
+        # export_table["counts"] = clean_key_data[key]["data"]
+
+        # export_table.to_csv(
+        #     os.path.join(sample_scrap_dir, "py_data/")
+        #     + key
+        #     + ".csv",
+        #     index=False)
+
+        meta_export_table[key] = export_table
+        del export_table
+
+    return meta_export_table
+    # print(meta_export_table)
+
 def path_init(flag, head):
     """
     -Constructs path to folder of characterization method depending on flag
@@ -157,8 +269,16 @@ def path_init(flag, head):
     -Makes local copy of given 'path' in scrap folder
     """
 
-    scrap_sample_dir = os.path.join(scrap_dir, head)
-    
+    if flag == 'xrd':
+        scrap_sample_dir = os.path.join(scrap_dir, "XRD/", head)
+    elif flag == 'pl':
+        scrap_sample_dir = os.path.join(scrap_dir, "PL/", head)
+    elif flag == 'uvvis':
+        scrap_sample_dir = os.path.join(scrap_dir, "UVVIS/", head)
+
+    print("scrap_sample_dir = " + scrap_sample_dir)
+        
+
     # Checks for presence of corresponding data in 'scrap' folder
     # Checks if new data should be overwritten whatever is in there already
     if os.path.isdir(scrap_sample_dir):
