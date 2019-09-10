@@ -29,12 +29,10 @@ def init(flag, samples_dir):
 
     if flag == "xrd":
         data = readXRD(os.path.join(scrap_dir, "XRD", samples_dir))
-        return data
     elif flag == "pl":
         data = readPL(os.path.join(scrap_dir, "PL", samples_dir))
     elif flag == "uvvis":
-        # data = readUVVIS(os.path.join(scrap_dir, "UVVIS", samples_dir))
-        pass
+        data = readUVVIS(os.path.join(scrap_dir, "UVVIS", samples_dir))
     else:
         sys.exit("ERROR: Functionality not yet developed.")
 
@@ -167,6 +165,60 @@ def readPL(sample_scrap_dir):
         if os.path.isfile(sample_scrap_dir + item):
             
             scan_data[item] = pd.read_csv(sample_scrap_dir + item, sep='\t',        skiprows=32, names=['wavelength', 'counts'])
+            shutil.move(sample_scrap_dir + item, sample_scrap_dir + "raw/")
+
+        else:
+            pass
+    
+    # Cleans keys up a little for easy plot labeling
+    clean_key_data = {}
+    for key in scan_data.keys():
+        clean_key_data[key.replace(".txt","")] = scan_data[key]
+    
+    return clean_key_data
+
+def readUVVIS(sample_scrap_dir):
+    """
+    -Takes location of local copy of data and extracts python-readable data from XRDML files
+
+    -Had to create dummy variable correct_items to remove unwanted files first
+    -Correct list is reassigned to scrap_contents after 
+    """
+
+    scrap_contents = os.listdir(sample_scrap_dir)
+
+    # Check for desired filetype, if not move to junk folder
+    for item in scrap_contents:
+        if (
+            os.path.isfile(sample_scrap_dir + item) == True and 
+            item.lower().endswith(".txt") == False
+        ):
+            shutil.move(sample_scrap_dir + item, sample_scrap_dir + "junk/")
+        else:
+            pass
+        
+    # Update scrap folder contents after cleaning
+    scrap_contents = os.listdir(sample_scrap_dir)
+    
+    """
+    This section:
+    -Iterate over files we want to extract data from now
+    -Clean filenames to make easier descriptors later 
+    -Raw data is placed into scrap/*sample*/raw
+    -Data is spat out into csv files in scrap/*sample*/py_data
+    """
+
+    # Initialize scan_data dict that will contain key-assigned data that is later fed into pandas DataFrame
+    scan_data = {}
+    
+    # Update scrap folder contents after cleaning filenames
+    scrap_contents = os.listdir(sample_scrap_dir)
+
+    # Read file directly into pandas DataFrame
+    for item in scrap_contents:
+        if os.path.isfile(sample_scrap_dir + item):
+            
+            scan_data[item] = pd.read_csv(sample_scrap_dir + item, sep='\t',        skiprows=2, names=['wavelength', 'abs'])
             shutil.move(sample_scrap_dir + item, sample_scrap_dir + "raw/")
 
         else:
