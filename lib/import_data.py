@@ -161,10 +161,11 @@ def readPL(sample_scrap_dir):
     scrap_contents = os.listdir(sample_scrap_dir)
 
     # Read file directly into pandas DataFrame
+    # TODO: find a way for the reading process to automatically ignore parameter header regardless of length
     for item in scrap_contents:
         if os.path.isfile(sample_scrap_dir + item):
             
-            scan_data[item] = pd.read_csv(sample_scrap_dir + item, sep='\t',        skiprows=35, names=['wavelength', 'counts'])
+            scan_data[item] = pd.read_csv(sample_scrap_dir + item, sep='\t',        skiprows=37, names=['wavelength', 'counts'])
             shutil.move(sample_scrap_dir + item, sample_scrap_dir + "raw/")
 
         else:
