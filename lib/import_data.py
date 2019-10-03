@@ -164,7 +164,7 @@ def readPL(sample_scrap_dir):
     for item in scrap_contents:
         if os.path.isfile(sample_scrap_dir + item):
             
-            scan_data[item] = pd.read_csv(sample_scrap_dir + item, sep='\t',        skiprows=32, names=['wavelength', 'counts'])
+            scan_data[item] = pd.read_csv(sample_scrap_dir + item, sep='\t',        skiprows=35, names=['wavelength', 'counts'])
             shutil.move(sample_scrap_dir + item, sample_scrap_dir + "raw/")
 
         else:
