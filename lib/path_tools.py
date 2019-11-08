@@ -15,6 +15,7 @@ def init(flag, head):
             'xrd': (box_root + "XRD/"),
             'pl': (box_root + "PL/"),
             'uvvis': (box_root + "UV-VIS/"),
+            'ftir': (box_root + "FTIR/"),
         }
 
     else:
@@ -24,6 +25,7 @@ def init(flag, head):
             'xrd': (box_root + "XRD/"),
             'pl': (box_root + "PL/"),
             'uvvis': (box_root + "UV-VIS/"),
+            'ftir': (box_root + "FTIR/"),
         }
 
     # Check valid flag was passed, if valid construct path
@@ -50,6 +52,8 @@ def init(flag, head):
         scrap_sample_dir = os.path.join(scrap_dir, "PL/", head)
     elif flag == 'uvvis':
         scrap_sample_dir = os.path.join(scrap_dir, "UVVIS/", head)
+    elif flag == 'ftir':
+        scrap_sample_dir = os.path.join(scrap_dir, "FTIR/", head)
       
     # Checks for presence of corresponding data in 'scrap' folder
     # Checks if new data should be overwritten whatever is in there already

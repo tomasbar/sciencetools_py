@@ -33,6 +33,8 @@ def init(flag, samples_dir):
         data = readPL(os.path.join(scrap_dir, "PL", samples_dir))
     elif flag == "uvvis":
         data = readUVVIS(os.path.join(scrap_dir, "UVVIS", samples_dir))
+    elif flag == "ftir":
+        data = readFTIR(os.path.join(scrap_dir, "FTIR", samples_dir))
     else:
         sys.exit("ERROR: Functionality not yet developed.")
 
@@ -231,6 +233,91 @@ def readUVVIS(sample_scrap_dir):
         clean_key_data[key.replace(".txt","")] = scan_data[key]
     
     return clean_key_data
+
+def readFTIR(sample_scrap_dir):
+    """
+    -Takes location of local copy of data and extracts python-readable data from XRDML files
+
+    -Had to create dummy variable correct_items to remove unwanted files first
+    -Correct list is reassigned to scrap_contents after 
+    """
+
+    scrap_contents = os.listdir(sample_scrap_dir)
+
+    # Check for desired filetype, if not move to junk folder
+    for item in scrap_contents:
+        if (
+            os.path.isfile(sample_scrap_dir + item) == True and 
+            item.lower().endswith(".xrdml") == False
+        ):
+            shutil.move(sample_scrap_dir + item, sample_scrap_dir + "junk/")
+        else:
+            pass
+    
+    # Update scrap folder contents after cleaning
+    scrap_contents = os.listdir(sample_scrap_dir)
+    
+    """
+    This section:
+    -Iterate over files we want to extract data from now
+    -Clean filenames to make easier descriptors later 
+    -Raw data is placed into scrap/*sample*/raw
+    -Data is spat out into csv files in scrap/*sample*/py_data
+    """
+
+    # Initialize scan_data dict that will contain key-assigned data that is later fed into pandas DataFrame
+    scan_data = {}
+
+    #Clean XRDML filenames to make plot labeling easier later
+    for item in scrap_contents:
+        newname = item.replace(" Tomas_quick gonio scan_1", "")
+        os.rename(sample_scrap_dir + item, sample_scrap_dir + newname)
+    
+    # Update scrap folder contents after cleaning filenames
+    scrap_contents = os.listdir(sample_scrap_dir)
+
+    # Read all details extracted by xrdtools into scan_data dict
+    for item in scrap_contents:
+        if (
+            os.path.isfile(sample_scrap_dir + item) == True and
+            item.startswith("CIF") != True   
+        ):
+            scan_data[item] = xrdtools.read_xrdml(sample_scrap_dir + item)
+            shutil.move(sample_scrap_dir + item, sample_scrap_dir + "raw/")
+            
+        else:
+            pass
+
+    clean_key_data = {}
+
+    for key in scan_data.keys():
+        clean_key_data[key.replace(".xrdml","")] = scan_data[key]
+    
+    """
+    This section:
+    -Takes dict data and outputs .csv files
+    -Returns a dict of pandas DataFrames
+    """
+
+    # Dict of pandas DataFrames of entire sample pool indexed by clean keys
+    meta_export_table = {}
+
+    for key in clean_key_data.keys():
+        export_table = pd.DataFrame(data=None, columns=["2theta", "counts"])
+
+        export_table["2theta"] = clean_key_data[key]["x"]
+        export_table["counts"] = clean_key_data[key]["data"]
+
+        export_table.to_csv(
+            os.path.join(sample_scrap_dir, "py_data/")
+            + key
+            + ".csv",
+            index=False)
+
+        meta_export_table[key] = export_table
+        del export_table
+
+    return meta_export_table
 
 # GLOBAL PLATFORM DEPENDENT VARIABLES
 if platform.system() == "Darwin":
