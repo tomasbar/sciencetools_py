@@ -74,10 +74,18 @@ def readXRD(sample_scrap_dir):
     # Initialize scan_data dict that will contain key-assigned data that is later fed into pandas DataFrame
     scan_data = {}
 
+    # List useless XRD scan names that need to be cleaned
+    useless_exts = [
+        " Tomas_quick gonio scan_1",
+        " Tomas_long gonio scan_2"
+    ]
+
     #Clean XRDML filenames to make plot labeling easier later
     for item in scrap_contents:
-        newname = item.replace(" Tomas_quick gonio scan_1", "")
-        os.rename(sample_scrap_dir + item, sample_scrap_dir + newname)
+        for ext in useless_exts:
+            if ext in item:
+                newname = item.replace(ext, "")
+                os.rename(sample_scrap_dir + item, sample_scrap_dir + newname)
     
     # Update scrap folder contents after cleaning filenames
     scrap_contents = os.listdir(sample_scrap_dir)
