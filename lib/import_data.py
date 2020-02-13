@@ -243,12 +243,6 @@ def readUVVIS(sample_scrap_dir):
     return clean_key_data
 
 def readFTIR(sample_scrap_dir):
-    """
-    -Takes location of local copy of data and extracts python-readable data from XRDML files
-
-    -Had to create dummy variable correct_items to remove unwanted files first
-    -Correct list is reassigned to scrap_contents after 
-    """
 
     scrap_contents = os.listdir(sample_scrap_dir)
 
@@ -256,7 +250,7 @@ def readFTIR(sample_scrap_dir):
     for item in scrap_contents:
         if (
             os.path.isfile(sample_scrap_dir + item) == True and 
-            item.lower().endswith(".xrdml") == False
+            item.lower().endswith(".csv") == False
         ):
             shutil.move(sample_scrap_dir + item, sample_scrap_dir + "junk/")
         else:
@@ -276,30 +270,19 @@ def readFTIR(sample_scrap_dir):
     # Initialize scan_data dict that will contain key-assigned data that is later fed into pandas DataFrame
     scan_data = {}
 
-    #Clean XRDML filenames to make plot labeling easier later
-    for item in scrap_contents:
-        newname = item.replace(" Tomas_quick gonio scan_1", "")
-        os.rename(sample_scrap_dir + item, sample_scrap_dir + newname)
-    
-    # Update scrap folder contents after cleaning filenames
-    scrap_contents = os.listdir(sample_scrap_dir)
-
     # Read all details extracted by xrdtools into scan_data dict
     for item in scrap_contents:
-        if (
-            os.path.isfile(sample_scrap_dir + item) == True and
-            item.startswith("CIF") != True   
-        ):
-            scan_data[item] = xrdtools.read_xrdml(sample_scrap_dir + item)
+        if os.path.isfile(sample_scrap_dir + item) == True:
+            scan_data[item] = pd.read_csv(sample_scrap_dir + item,
+                names=['Cm-1', 'Counts'])
             shutil.move(sample_scrap_dir + item, sample_scrap_dir + "raw/")
-            
         else:
             pass
 
     clean_key_data = {}
 
     for key in scan_data.keys():
-        clean_key_data[key.replace(".xrdml","")] = scan_data[key]
+        clean_key_data[key.replace(".CSV","")] = scan_data[key]
     
     """
     This section:
@@ -311,16 +294,10 @@ def readFTIR(sample_scrap_dir):
     meta_export_table = {}
 
     for key in clean_key_data.keys():
-        export_table = pd.DataFrame(data=None, columns=["2theta", "counts"])
+        export_table = pd.DataFrame(data=None, columns=["Cm-1", "Counts"])
 
-        export_table["2theta"] = clean_key_data[key]["x"]
-        export_table["counts"] = clean_key_data[key]["data"]
-
-        export_table.to_csv(
-            os.path.join(sample_scrap_dir, "py_data/")
-            + key
-            + ".csv",
-            index=False)
+        export_table["Cm-1"] = clean_key_data[key]["Cm-1"]
+        export_table["Counts"] = clean_key_data[key]["Counts"]
 
         meta_export_table[key] = export_table
         del export_table
